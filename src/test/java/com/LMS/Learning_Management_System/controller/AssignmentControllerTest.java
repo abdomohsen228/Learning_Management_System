@@ -16,6 +16,9 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -111,6 +114,16 @@ public class AssignmentControllerTest {
         verify(assignmentService, times(1)).getFeedback(eq(1), eq(request));
     }
 
+    @Test
+    void testTrackAssignmentSubmissions()
+    {
+        List<String> ans = new ArrayList<String>();
 
+        when(assignmentService.assignmentSubmissions(eq(1), eq(request))).thenReturn(ans);
+
+        ResponseEntity <?> response = assigmentController.trackAssignmentSubmissions(1, request);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(ans, response.getBody());
+        verify(assignmentService, times(1)).assignmentSubmissions(eq(1), eq(request));
+    }
 }
-
