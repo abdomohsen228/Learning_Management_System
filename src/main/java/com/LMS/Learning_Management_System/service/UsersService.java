@@ -4,6 +4,8 @@ import com.LMS.Learning_Management_System.entity.*;
 import com.LMS.Learning_Management_System.repository.*;
 import com.LMS.Learning_Management_System.util.UserSignUpRequest;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +27,14 @@ public class UsersService {
         this.adminRepository = adminRepository;
         this.instructorRepository = instructorRepository;
     }
-    public void save(UserSignUpRequest signUpRequest ) {
+    public void save(UserSignUpRequest signUpRequest , HttpServletRequest request) {
+        Users loggedInUser = (Users) request.getSession().getAttribute("user");
+        if (loggedInUser == null) {
+            throw new IllegalArgumentException("Admin must logged in to create a new user");
+        }
+        if (loggedInUser.getUserTypeId().getUserTypeId() !=1) {
+            throw new IllegalArgumentException("Admin only can create account");
+        }
         if (usersRepository.findByEmail(signUpRequest.getEmail()) != null) {
             throw new IllegalArgumentException("Email already in use");
         }
