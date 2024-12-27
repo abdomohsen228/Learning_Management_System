@@ -1,6 +1,9 @@
 package com.LMS.Learning_Management_System.controller;
 
 import com.LMS.Learning_Management_System.dto.AssignmentDto;
+import com.LMS.Learning_Management_System.dto.GetFeedbackDto;
+import com.LMS.Learning_Management_System.dto.GradeAssignmentDto;
+import com.LMS.Learning_Management_System.dto.SaveAssignmentDto;
 import com.LMS.Learning_Management_System.entity.Assignment;
 import com.LMS.Learning_Management_System.entity.Student;
 import com.LMS.Learning_Management_System.entity.Submission;
@@ -35,32 +38,32 @@ public class AssigmentController {
         }
     }
 
-    @PutMapping("/gradeAssignment/studentID={studentID}/assigID={assigID}/grade={grade}")
-    public ResponseEntity<String> gradeAssignment(@PathVariable int studentID, @PathVariable int assigID, @PathVariable float grade, HttpServletRequest request ){
+    @PutMapping("/gradeAssignment")
+    public ResponseEntity<String> gradeAssignment(@RequestBody GradeAssignmentDto gradeAssignmentDto, HttpServletRequest request){
         try {
-            assignmentService.gradeAssignment(studentID, assigID, grade, request);
-            String message = "Assignment "+assigID+" grade is uploaded";
-            notificationsService.sendNotification(message,studentID);
+            assignmentService.gradeAssignment(gradeAssignmentDto.getStudentId(), gradeAssignmentDto.getAssignmentId(), gradeAssignmentDto.getGrade(), request);
+            String message = "Assignment "+gradeAssignmentDto.getAssignmentId()+" grade is uploaded";
+            notificationsService.sendNotification(message, gradeAssignmentDto.getStudentId());
             return ResponseEntity.ok("Assignment has been graded successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PutMapping("/saveAssignmentFeedback/studentID={studentID}/assigID={assigID}/feedback={feedback}")
-    public ResponseEntity<String> saveAssignmentFeedback(@PathVariable int studentID, @PathVariable int assigID, @PathVariable String feedback, HttpServletRequest request ){
+    @PutMapping("/saveAssignmentFeedback")
+    public ResponseEntity<String> saveAssignmentFeedback(@RequestBody SaveAssignmentDto saveAssignmentDto, HttpServletRequest request ){
         try {
-            assignmentService.saveAssignmentFeedback(studentID, assigID, feedback, request);
+            assignmentService.saveAssignmentFeedback(saveAssignmentDto.getStudentId(), saveAssignmentDto.getAssignmentId(), saveAssignmentDto.getFeedback(), request);
             return ResponseEntity.ok("Assignment feedback is saved successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @GetMapping("/getFeedback/assignmentId={assignmentId}")
-    public ResponseEntity<String> getFeedback(@PathVariable int assignmentId, HttpServletRequest request){
+    @GetMapping("/getFeedback")
+    public ResponseEntity<String> getFeedback(@RequestBody GetFeedbackDto getFeedbackDto, HttpServletRequest request){
         try {
-            return ResponseEntity.ok(assignmentService.getFeedback(assignmentId, request));
+            return ResponseEntity.ok(assignmentService.getFeedback(getFeedbackDto.getAssignmentId(), request));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -1,6 +1,9 @@
 package com.LMS.Learning_Management_System.controller;
 
 import com.LMS.Learning_Management_System.dto.AssignmentDto;
+import com.LMS.Learning_Management_System.dto.GetFeedbackDto;
+import com.LMS.Learning_Management_System.dto.GradeAssignmentDto;
+import com.LMS.Learning_Management_System.dto.SaveAssignmentDto;
 import com.LMS.Learning_Management_System.entity.Assignment;
 import com.LMS.Learning_Management_System.entity.Course;
 import com.LMS.Learning_Management_System.entity.Instructor;
@@ -39,10 +42,14 @@ public class AssignmentControllerTest {
 
     private MockHttpServletRequest request;
 
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         request = new MockHttpServletRequest();
+
+
+
     }
 
     @Test
@@ -66,12 +73,17 @@ public class AssignmentControllerTest {
 
     @Test
     void gradeAssignmentTest() {
+        GradeAssignmentDto gradeAssignmentDto = new GradeAssignmentDto();
+        gradeAssignmentDto.setAssignmentId(1);
+        gradeAssignmentDto.setStudentId(1);
+        gradeAssignmentDto.setGrade(100);
+
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         doNothing().when(assignmentService).gradeAssignment(anyInt(), anyInt(), anyFloat(), any(HttpServletRequest.class));
         doNothing().when(notificationsService).sendNotification(anyString(), anyInt());
 
-        ResponseEntity<String> response = assigmentController.gradeAssignment(1,1, 100, request);
+        ResponseEntity<String> response = assigmentController.gradeAssignment(gradeAssignmentDto, request);
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("Assignment has been graded successfully.", response.getBody());
@@ -83,11 +95,16 @@ public class AssignmentControllerTest {
 
     @Test
     void saveAssignmentFeedbackTest() {
+        SaveAssignmentDto saveAssignmentDto = new SaveAssignmentDto();
+        saveAssignmentDto.setAssignmentId(1);
+        saveAssignmentDto.setStudentId(1);
+        saveAssignmentDto.setFeedback("Good job");
+
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         doNothing().when(assignmentService).saveAssignmentFeedback(anyInt(), anyInt(), anyString(), any(HttpServletRequest.class));
 
-        ResponseEntity<String> response = assigmentController.saveAssignmentFeedback(1, 1, "done", request);
+        ResponseEntity<String> response = assigmentController.saveAssignmentFeedback(saveAssignmentDto, request);
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("Assignment feedback is saved successfully.", response.getBody());
@@ -98,12 +115,15 @@ public class AssignmentControllerTest {
 
     @Test
     void getFeedbackTest() {
+        GetFeedbackDto getFeedbackDto = new GetFeedbackDto();
+        getFeedbackDto.setAssignmentId(1);
+
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         when(assignmentService.getFeedback(anyInt(), any(HttpServletRequest.class)))
                 .thenReturn("This is a feedback message");
 
-        ResponseEntity<String> response = assigmentController.getFeedback(1, request);
+        ResponseEntity<String> response = assigmentController.getFeedback(getFeedbackDto, request);
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("This is a feedback message", response.getBody());
