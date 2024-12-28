@@ -5,6 +5,7 @@ import com.LMS.Learning_Management_System.dto.GetFeedbackDto;
 import com.LMS.Learning_Management_System.dto.GradeAssignmentDto;
 import com.LMS.Learning_Management_System.dto.SaveAssignmentDto;
 import com.LMS.Learning_Management_System.entity.Assignment;
+import com.LMS.Learning_Management_System.entity.Course;
 import com.LMS.Learning_Management_System.entity.Student;
 import com.LMS.Learning_Management_System.entity.Submission;
 import com.LMS.Learning_Management_System.service.AssignmentService;
@@ -26,6 +27,17 @@ public class AssigmentController {
     public AssigmentController(AssignmentService assignmentService, NotificationsService notificationsService) {
         this.assignmentService = assignmentService;
         this.notificationsService = notificationsService;
+    }
+    @PostMapping("/add_assignment")
+    public ResponseEntity<String> addAssignment(@RequestBody AssignmentDto assignment , HttpServletRequest request)
+
+    {
+        try {
+            assignmentService.addAssignment(assignment , request);
+            return ResponseEntity.ok("Assignment created successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/uploadAssignment")

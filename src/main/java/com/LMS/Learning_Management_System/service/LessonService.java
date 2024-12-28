@@ -18,12 +18,14 @@ public class LessonService {
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final LessonAttendanceRepository lessonAttendanceRepository;
+    private final StudentRepository studentRepository;
 
-    public LessonService(LessonRepository lessonRepository, CourseRepository courseRepository, EnrollmentRepository enrollmentRepository, LessonAttendanceRepository lessonAttendanceRepository) {
+    public LessonService(LessonRepository lessonRepository, CourseRepository courseRepository, EnrollmentRepository enrollmentRepository, LessonAttendanceRepository lessonAttendanceRepository, StudentRepository studentRepository) {
         this.lessonRepository = lessonRepository;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.lessonAttendanceRepository = lessonAttendanceRepository;
+        this.studentRepository = studentRepository;
     }
 
     public void addLesson(Lesson lesson, HttpServletRequest request) {
@@ -58,11 +60,23 @@ public class LessonService {
 
     public List<LessonDto> getLessonsByCourseId(int courseId, HttpServletRequest request) {
 
-        Course course = check_course_before_logic(courseId, request);
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new IllegalArgumentException("No such CourseId"));
         Users loggedInInstructor = (Users) request.getSession().getAttribute("user");
-        if (course.getInstructorId().getUserAccountId() != loggedInInstructor.getUserId()) {
-            throw new IllegalArgumentException("You are not the Instructor of this course");
+        if (loggedInInstructor == null) {
+            throw new IllegalArgumentException("No user is logged in.");
         }
+        if(loggedInInstructor.getUserTypeId().getUserTypeId() == 2) {
+            boolean enrolled = enrollmentRepository.existsByStudentAndCourse(studentRepository.findById(loggedInInstructor.getUserId())
+                            .orElseThrow(() -> new IllegalArgumentException("No student found with this ID!"))
+                    ,courseRepository.findById(courseId)
+                            .orElseThrow(() -> new IllegalArgumentException("No Course found with the given ID: " + courseId)));
+            if(!enrolled)
+                throw new IllegalArgumentException("You are not enrolled this course.");
+
+        }
+//        if (course.getInstructorId().getUserAccountId() != loggedInInstructor.getUserId()) {
+//            throw new IllegalArgumentException("You are not the Instructor of this course");
+//        }
         List<Lesson> lessons = lessonRepository.findByCourseId(course);
         return convertToCoueDtoList(lessons, courseId);
     }

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -57,6 +58,7 @@ public class AssignmentService {
         assignment1.setAssignmentId(assignment.getAssignmentId());
         assignment1.setDescription(assignment.getAssignmentDescription());
         assignment1.setCourseID(course);
+        assignment1.setDueDate(new Date());
         assignment1.setTitle(assignment.getAssignmentTitle());
 
         Submission submission = new Submission();
@@ -207,7 +209,7 @@ public class AssignmentService {
             for (Submission submission : assignmentSubmissions)
             {
                 Student student = submission.getStudentId();
-                String studentSubmission = student.getUserAccountId() + ": " + submission.getFilePath();
+                String studentSubmission = student.getUserAccountId() + ": " + submission.getGrade();
                 submissions.add(studentSubmission);
             }
             return submissions;
@@ -216,5 +218,33 @@ public class AssignmentService {
         {
             throw new IllegalArgumentException("Assignment with ID " + assignmentId + " not found.");
         }
+    }
+
+    public void addAssignment(AssignmentDto assignment, HttpServletRequest request) {
+        Users loggedInInstructor = (Users) request.getSession().getAttribute("user");
+        if (loggedInInstructor == null) {
+            throw new IllegalArgumentException("No user is logged in.");
+        }
+        if (loggedInInstructor.getUserTypeId() == null || loggedInInstructor.getUserTypeId().getUserTypeId() != 3) {
+            throw new IllegalArgumentException("Logged-in user is not an instructor.");
+        }
+        Course course = courseRepository.findById(assignment.getCourseId())
+                .orElseThrow(() -> new IllegalArgumentException("No such CourseId"));
+
+        int ids = course.getInstructorId().getUserAccountId();
+        if (loggedInInstructor.getUserId() != ids) {
+            throw new IllegalArgumentException("You are not the Instructor of this course");
+        }
+        boolean exist = assignmentRepository.existsById(assignment.getAssignmentId());
+        if (exist) {
+            throw new IllegalArgumentException("Assignment already exists");
+        }
+        Assignment assignment1=new Assignment();
+        assignment1.setDescription(assignment.getAssignmentDescription());
+        assignment1.setTitle(assignment.getAssignmentTitle());
+        assignment1.setDueDate(new Date());
+        assignment1.setCourseID(course);
+
+        assignmentRepository.save(assignment1);
     }
 }
