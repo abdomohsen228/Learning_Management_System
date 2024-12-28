@@ -81,7 +81,7 @@ public class QuizService {
         List<StudentDto> enrolledStudents = enrollmentService.viewEnrolledStudents(course_id,request);
         for(StudentDto student : enrolledStudents)
         {
-            notificationsService.sendNotification("A new Quiz with id: "+quiz.getQuizId()+" has been uploaded\n" +
+            notificationsService.sendNotification("A new Quiz with id: "+quiz.getQuizId()+" has been uploaded " +
                     "For course: "+course.getCourseName(),student.getUserAccountId());
         }
 
@@ -388,7 +388,8 @@ public class QuizService {
         grading.setQuiz_id(quiz);
         grading.setStudent_id(student);
         gradingRepository.save(grading);
-        notificationsService.sendNotification("Quiz "+quiz.getQuizId()+" has been graded", loggedInUser.getUserId());
+        int id  =quiz.getQuizId();
+        notificationsService.sendNotification("Quiz "+id+" has been graded", loggedInUser.getUserId());
 
     }
 

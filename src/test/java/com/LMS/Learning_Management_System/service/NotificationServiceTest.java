@@ -5,6 +5,8 @@ import com.LMS.Learning_Management_System.entity.Users;
 import com.LMS.Learning_Management_System.entity.UsersType;
 import com.LMS.Learning_Management_System.repository.NotificationsRepository;
 import com.LMS.Learning_Management_System.repository.UsersRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +26,9 @@ class NotificationServiceTest {
 
     @Mock
     private UsersRepository usersRepository;
+
+    @Mock
+    private HttpServletRequest request;
 
     @InjectMocks
     private NotificationsService notificationsService;
@@ -50,7 +55,10 @@ class NotificationServiceTest {
         List<Notifications> notificationsList = List.of(notification1, notification2);
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
 
-        List<String> result = notificationsService.getAllNotifications(1);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+
+        List<String> result = notificationsService.getAllNotifications(1, request);
 
         assertEquals(2, result.size());
         assertTrue(result.contains("Message 1"));
@@ -66,8 +74,10 @@ class NotificationServiceTest {
         List<Notifications> notificationsList = List.of(notification);
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
 
-        List<String> result = notificationsService.getAllNotifications(999);
+        List<String> result = notificationsService.getAllNotifications(999, request);
 
         assertTrue(result.isEmpty());
         verify(notificationsRepository, never()).save(any(Notifications.class));
@@ -76,8 +86,9 @@ class NotificationServiceTest {
     @Test
     void getAllNotificationsForUserWithNoNotifications_Test() {
         when(notificationsRepository.findAll()).thenReturn(List.of());
-
-        List<String> result = notificationsService.getAllNotifications(1);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+        List<String> result = notificationsService.getAllNotifications(1 ,request );
 
         assertTrue(result.isEmpty());
         verify(notificationsRepository, never()).save(any(Notifications.class));
@@ -94,8 +105,10 @@ class NotificationServiceTest {
 
         List<Notifications> notificationsList = List.of(notification1, notification2);
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
 
-        List<String> result = notificationsService.getAllUnreadNotifications(1);
+        List<String> result = notificationsService.getAllUnreadNotifications(1, request);
 
         assertEquals(1, result.size());
         assertTrue(result.contains("Message 1"));
@@ -112,11 +125,17 @@ class NotificationServiceTest {
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
 
-        List<String> result = notificationsService.getAllUnreadNotifications(999);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
 
-        assertTrue(result.isEmpty());
-        verify(notificationsRepository, never()).save(any(Notifications.class));
+        // Simulate no user logged in
+        when(mockSession.getAttribute("userId")).thenReturn(null);
+
+        // Expect exception
+        assertThrows(IllegalArgumentException.class,
+                () -> notificationsService.getAllUnreadNotifications(999, request));
     }
+
 
 
     @Test
@@ -129,7 +148,9 @@ class NotificationServiceTest {
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
 
-        List<String> result = notificationsService.getAllUnreadNotifications(1);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+        List<String> result = notificationsService.getAllUnreadNotifications(1,request);
 
         assertTrue(result.isEmpty());
         verify(notificationsRepository, never()).save(any(Notifications.class));

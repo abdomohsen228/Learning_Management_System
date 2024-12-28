@@ -34,12 +34,12 @@ public class StudentController {
     }
 
     @GetMapping("/allnotifications/{userId}")
-    public List<String> getAllNotifications(@PathVariable int userId) {
-        return notificationsService.getAllNotifications(userId);
+    public List<String> getAllNotifications(@PathVariable int userId, HttpServletRequest request)  {
+        return notificationsService.getAllNotifications(userId, request);
     }
 
     @GetMapping("/unreadnotifications/{userId}")
-    public List<String> getUnreadNotifications(@PathVariable int userId) {
-        return notificationsService.getAllUnreadNotifications(userId);
+    public List<String> getUnreadNotifications(@PathVariable int userId , HttpServletRequest request) {
+        return notificationsService.getAllUnreadNotifications(userId , request);
     }
 }

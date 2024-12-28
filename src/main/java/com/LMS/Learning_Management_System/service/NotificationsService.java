@@ -1,9 +1,11 @@
 package com.LMS.Learning_Management_System.service;
 
 import com.LMS.Learning_Management_System.entity.Notifications;
+import com.LMS.Learning_Management_System.entity.Student;
 import com.LMS.Learning_Management_System.entity.Users;
 import com.LMS.Learning_Management_System.repository.NotificationsRepository;
 import com.LMS.Learning_Management_System.repository.UsersRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,8 @@ public class NotificationsService {
         this.usersRepository = usersRepository;
     }
 
-    public List<String> getAllNotifications(int userId) {
+    public List<String> getAllNotifications(int userId , HttpServletRequest request) {
+        check(userId, request);
         List<Notifications> notificationsList = notificationsRepository.findAll();
 
         List<String> notificationsMessage = new ArrayList<>();
@@ -39,7 +42,8 @@ public class NotificationsService {
         return notificationsMessage;
     }
 
-    public List<String> getAllUnreadNotifications(int userId) {
+    public List<String> getAllUnreadNotifications(int userId ,HttpServletRequest request) {
+        check(userId , request);
         List<Notifications> notificationsList = notificationsRepository.findAll();
 
         List<String> notificationsMessage = new ArrayList<>();
@@ -64,6 +68,17 @@ public class NotificationsService {
         enrollmentNotification.setMessage(message);
         notificationsRepository.save(enrollmentNotification);
 
+    }
+    private void  check(int id , HttpServletRequest request)
+    {
+        Users loggedInUser = (Users) request.getSession().getAttribute("user");
+        if (loggedInUser == null) {
+            throw new IllegalArgumentException("No user is logged in.");
+        }
+
+        if (loggedInUser.getUserId()!=id) {
+            throw new IllegalArgumentException("ID mismatch. Please provide the correct ID.");
+        }
     }
 
 

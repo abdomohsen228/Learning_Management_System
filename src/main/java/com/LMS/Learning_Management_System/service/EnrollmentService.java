@@ -58,8 +58,8 @@ public class EnrollmentService {
         enrollment.setEnrollmentDate(new java.util.Date());
 
         enrollmentRepository.save(enrollment);
-        notificationsService.sendNotification("Student with Id: "+student.getUserId()+
-                " has enrolled in the course with id: "+courseId,course.getInstructorId().getUserAccountId());
+        int stdId = enrollmentRequest.getStudent().getUserAccountId();
+        notificationsService.sendNotification("Student with id "+ stdId +" Enrolled ", course.getInstructorId().getUserAccountId());
     }
 
     public List<StudentDto> viewEnrolledStudents(int courseId, HttpServletRequest request){
