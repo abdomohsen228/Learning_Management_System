@@ -4,6 +4,7 @@ package com.LMS.Learning_Management_System.service;
 import com.LMS.Learning_Management_System.dto.GradingDto;
 import com.LMS.Learning_Management_System.dto.QuestionDto;
 import com.LMS.Learning_Management_System.dto.QuizDto;
+import com.LMS.Learning_Management_System.dto.StudentDto;
 import com.LMS.Learning_Management_System.repository.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.LMS.Learning_Management_System.entity.*;
@@ -29,11 +30,13 @@ public class QuizService {
     private final GradingRepository gradingRepository;
     private final QuestionTypeRepository questionTypeRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final NotificationsService notificationsService;
 
+    private final EnrollmentService enrollmentService;
     List<Question> quizQuestions = new ArrayList<>();
     List<Answer> quizAnswers = new ArrayList<>();
     List<Question>questionBank= new ArrayList<>();
-    public QuizService(QuizRepository quizRepository, CourseRepository courseRepository, QuestionRepository questionRepository, ObjectMapper objectMapper, StudentRepository studentRepository, GradingRepository gradingRepository, QuestionTypeRepository questionTypeRepository, EnrollmentRepository enrollmentRepository) {
+    public QuizService(QuizRepository quizRepository, CourseRepository courseRepository, QuestionRepository questionRepository, ObjectMapper objectMapper, StudentRepository studentRepository, GradingRepository gradingRepository, QuestionTypeRepository questionTypeRepository, EnrollmentRepository enrollmentRepository, NotificationsService notificationsService, EnrollmentService enrollmentService) {
         this.quizRepository = quizRepository;
         this.courseRepository = courseRepository;
         this.questionRepository = questionRepository;
@@ -42,6 +45,8 @@ public class QuizService {
         this.gradingRepository = gradingRepository;
         this.questionTypeRepository = questionTypeRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.notificationsService = notificationsService;
+        this.enrollmentService = enrollmentService;
     }
 
 
@@ -73,6 +78,12 @@ public class QuizService {
 
         generateQuestions(quiz,type_id, course);
         quizRepository.save(quiz);
+        List<StudentDto> enrolledStudents = enrollmentService.viewEnrolledStudents(course_id,request);
+        for(StudentDto student : enrolledStudents)
+        {
+            notificationsService.sendNotification("A new Quiz with id: "+quiz.getQuizId()+" has been uploaded\n" +
+                    "For course: "+course.getCourseName(),student.getUserAccountId());
+        }
 
         return quiz.getQuizId();
     }
@@ -334,7 +345,6 @@ public class QuizService {
         return quizDto;
     }
 
-
     // grade quiz
     public void gradeQuiz(GradingDto gradingDto, HttpServletRequest request) throws Exception {
         Optional<Quiz> optionalQuiz= Optional.ofNullable(quizRepository.findById(gradingDto.getQuiz_id())
@@ -378,6 +388,7 @@ public class QuizService {
         grading.setQuiz_id(quiz);
         grading.setStudent_id(student);
         gradingRepository.save(grading);
+        notificationsService.sendNotification("Quiz "+quiz.getQuizId()+" has been graded", loggedInUser.getUserId());
 
     }
 

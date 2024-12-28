@@ -16,7 +16,6 @@ public class UserSignUpRequest {
     @NotEmpty
     private int userTypeId;
 
-
     public String getEmail() {
         return email;
     }

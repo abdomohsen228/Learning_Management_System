@@ -20,11 +20,14 @@ public class EnrollmentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
 
+    private final NotificationsService notificationsService;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository, StudentRepository studentRepository, CourseRepository courseRepository) {
+
+    public EnrollmentService(EnrollmentRepository enrollmentRepository, StudentRepository studentRepository, CourseRepository courseRepository, NotificationsService notificationsService) {
         this.enrollmentRepository = enrollmentRepository;
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
+        this.notificationsService = notificationsService;
     }
 
     public void enrollInCourse(Enrollment enrollmentRequest, HttpServletRequest request) {
@@ -55,6 +58,8 @@ public class EnrollmentService {
         enrollment.setEnrollmentDate(new java.util.Date());
 
         enrollmentRepository.save(enrollment);
+        notificationsService.sendNotification("Student with Id: "+student.getUserId()+
+                " has enrolled in the course with id: "+courseId,course.getInstructorId().getUserAccountId());
     }
 
     public List<StudentDto> viewEnrolledStudents(int courseId, HttpServletRequest request){
