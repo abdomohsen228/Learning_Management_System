@@ -34,10 +34,24 @@ class NotificationServiceTest {
     private NotificationsService notificationsService;
 
     private UsersType instructorType;
+    private Users instructorUser;
+    private Users studentUser;
+    private UsersType studentType;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        studentType = new UsersType();
+        studentType.setUserTypeId(2);
+
+        instructorUser = new Users();
+        instructorUser.setUserId(1);
+        instructorUser.setUserTypeId(instructorType);
+
+        studentUser = new Users();
+        studentUser.setUserId(2);
+        studentUser.setUserTypeId(studentType);
 
         instructorType = new UsersType();
         instructorType.setUserTypeId(3);
@@ -46,7 +60,7 @@ class NotificationServiceTest {
     @Test
     void getAllNotificationsForValidUserTest() {
 
-        Users user = new Users(1, "instructor@example.com", "password", new Date(), instructorType);
+        Users user = new Users(2, "instructor@example.com", "password", new Date(), instructorType);
         Notifications notification1 = new Notifications(1, user, "Message 1", new Date());
         notification1.setRead(false);
         Notifications notification2 = new Notifications(2, user, "Message 2", new Date());
@@ -57,8 +71,9 @@ class NotificationServiceTest {
 
         HttpSession mockSession = mock(HttpSession.class);
         when(request.getSession()).thenReturn(mockSession);
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
 
-        List<String> result = notificationsService.getAllNotifications(1, request);
+        List<String> result = notificationsService.getAllNotifications(2, request);
 
         assertEquals(2, result.size());
         assertTrue(result.contains("Message 1"));
@@ -69,26 +84,34 @@ class NotificationServiceTest {
     @Test
     void getAllNotificationsForInvalidUserTest() {
 
-        Users user = new Users(1, "instructor@example.com", "password", new Date(), instructorType);
+        Users user = new Users(2, "instructor@example.com", "password", new Date(), instructorType);
         Notifications notification = new Notifications(1, user, "Message", new Date());
         List<Notifications> notificationsList = List.of(notification);
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
         HttpSession mockSession = mock(HttpSession.class);
         when(request.getSession()).thenReturn(mockSession);
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
 
-        List<String> result = notificationsService.getAllNotifications(999, request);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            notificationsService.getAllNotifications(999, request);
+        });
 
-        assertTrue(result.isEmpty());
+//        assertEquals("Logged-in instructor does not have access for this course.", exception.getMessage());
+//        List<String> result = notificationsService.getAllNotifications(999, request);
+//
+        assertEquals("ID mismatch. Please provide the correct ID.", exception.getMessage());
         verify(notificationsRepository, never()).save(any(Notifications.class));
     }
 
     @Test
     void getAllNotificationsForUserWithNoNotifications_Test() {
-        when(notificationsRepository.findAll()).thenReturn(List.of());
+
         HttpSession mockSession = mock(HttpSession.class);
         when(request.getSession()).thenReturn(mockSession);
-        List<String> result = notificationsService.getAllNotifications(1 ,request );
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
+        when(notificationsRepository.findAll()).thenReturn(List.of());
+        List<String> result = notificationsService.getAllNotifications(2 ,request );
 
         assertTrue(result.isEmpty());
         verify(notificationsRepository, never()).save(any(Notifications.class));
@@ -97,18 +120,19 @@ class NotificationServiceTest {
     @Test
     void getAllUnreadNotificationsForValidUser_Test() {
 
-        Users user = new Users(1, "instructor@example.com", "password", new Date(), instructorType);
+        Users user = new Users(2, "instructor@example.com", "password", new Date(), instructorType);
         Notifications notification1 = new Notifications(1, user, "Message 1", new Date());
         notification1.setRead(false);
         Notifications notification2 = new Notifications(2, user, "Message 2", new Date());
         notification2.setRead(true);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
 
         List<Notifications> notificationsList = List.of(notification1, notification2);
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
-        HttpSession mockSession = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(mockSession);
 
-        List<String> result = notificationsService.getAllUnreadNotifications(1, request);
+        List<String> result = notificationsService.getAllUnreadNotifications(2, request);
 
         assertEquals(1, result.size());
         assertTrue(result.contains("Message 1"));
@@ -118,39 +142,44 @@ class NotificationServiceTest {
     @Test
     void getAllUnreadNotificationsForInvalidUserTest() {
 
-        Users validUser = new Users(1, "instructor@example.com", "password", new Date(), instructorType);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
+        Users validUser = new Users(2, "instructor@example.com", "password", new Date(), instructorType);
         Notifications notification = new Notifications(1, validUser, "Message", new Date());
         notification.setRead(false);
         List<Notifications> notificationsList = List.of(notification);
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
 
-        HttpSession mockSession = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(mockSession);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            notificationsService.getAllUnreadNotifications(999, request);
+        });
 
-        // Simulate no user logged in
-        when(mockSession.getAttribute("userId")).thenReturn(null);
+//        assertEquals("Logged-in instructor does not have access for this course.", exception.getMessage());
+//        List<String> result = notificationsService.getAllNotifications(999, request);
+//
+        assertEquals("ID mismatch. Please provide the correct ID.", exception.getMessage());
+        verify(notificationsRepository, never()).save(any(Notifications.class));
 
-        // Expect exception
-        assertThrows(IllegalArgumentException.class,
-                () -> notificationsService.getAllUnreadNotifications(999, request));
     }
 
 
 
     @Test
     void getAllUnreadNotificationsForUserWithNoUnreadNotifications_Test() {
-        Users user = new Users(1, "user1@example.com", "password", new Date(), instructorType);
+        Users user = new Users(2, "user1@example.com", "password", new Date(), instructorType);
         Notifications notification1 = new Notifications(1, user, "Message", new Date());
         notification1.setRead(true);
+        HttpSession mockSession = mock(HttpSession.class);
+        when(request.getSession()).thenReturn(mockSession);
+        when(mockSession.getAttribute("user")).thenReturn(studentUser);
+
 
         List<Notifications> notificationsList = List.of(notification1);
 
         when(notificationsRepository.findAll()).thenReturn(notificationsList);
-
-        HttpSession mockSession = mock(HttpSession.class);
-        when(request.getSession()).thenReturn(mockSession);
-        List<String> result = notificationsService.getAllUnreadNotifications(1,request);
+        List<String> result = notificationsService.getAllUnreadNotifications(2,request);
 
         assertTrue(result.isEmpty());
         verify(notificationsRepository, never()).save(any(Notifications.class));
