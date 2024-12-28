@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
     @Bean
+
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth

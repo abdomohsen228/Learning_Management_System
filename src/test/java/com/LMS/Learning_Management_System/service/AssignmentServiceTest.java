@@ -6,7 +6,6 @@ import com.LMS.Learning_Management_System.entity.*;
 import com.LMS.Learning_Management_System.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

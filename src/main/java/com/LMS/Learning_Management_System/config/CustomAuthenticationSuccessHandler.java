@@ -20,9 +20,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        boolean hasAdminRole = authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ADMIN"));
-        boolean hasInstructorRole = authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("INSTRUCTOR"));
-        boolean hasStudentRole = authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("STUDENT"));
 
 
         Map<String, Object> responseBody = new HashMap<>();

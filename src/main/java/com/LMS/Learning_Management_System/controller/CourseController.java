@@ -5,11 +5,9 @@ import com.LMS.Learning_Management_System.entity.Course;
 import com.LMS.Learning_Management_System.entity.Lesson;
 import com.LMS.Learning_Management_System.service.CourseService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.LMS.Learning_Management_System.entity.Users;
-import com.LMS.Learning_Management_System.service.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
